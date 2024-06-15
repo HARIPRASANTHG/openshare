@@ -1,0 +1,179 @@
+Sure! Below is an example of how you can implement this functionality in Angular 9 using TypeScript, HTML, and CSS.
+Step 1: Create a service for OTP-related operations
+
+First, create a service that will handle API calls to generate and validate the OTP.
+otp.service.ts
+
+typescript
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class OtpService {
+
+  private generateOtpUrl = 'https://api.example.com/generate-otp'; // Replace with your API URL
+  private validateOtpUrl = 'https://api.example.com/validate-otp'; // Replace with your API URL
+
+  constructor(private http: HttpClient) { }
+
+  generateOtp(): Observable<any> {
+    return this.http.post(this.generateOtpUrl, {});
+  }
+
+  validateOtp(otp: string): Observable<any> {
+    return this.http.post(this.validateOtpUrl, { otp });
+  }
+}
+
+Step 2: Create a component for OTP input
+otp.component.ts
+
+typescript
+
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { OtpService } from './otp.service';
+
+@Component({
+  selector: 'app-otp',
+  templateUrl: './otp.component.html',
+  styleUrls: ['./otp.component.css']
+})
+export class OtpComponent {
+
+  otp: string = '';
+
+  constructor(private otpService: OtpService, private router: Router) {}
+
+  onGenerateOtp() {
+    this.otpService.generateOtp().subscribe(response => {
+      // Navigate to OTP input screen
+      this.router.navigate(['/otp-input']);
+    }, error => {
+      console.error('Error generating OTP', error);
+    });
+  }
+
+  onValidateOtp() {
+    this.otpService.validateOtp(this.otp).subscribe(response => {
+      // Handle successful validation
+      console.log('OTP validated successfully');
+    }, error => {
+      console.error('Error validating OTP', error);
+    });
+  }
+}
+
+Step 3: Create the HTML templates
+otp.component.html
+
+This will be the initial screen with the button to generate OTP.
+
+html
+
+<div class="otp-container">
+  <button (click)="onGenerateOtp()">Generate OTP</button>
+</div>
+
+otp-input.component.html
+
+This will be the screen where the user inputs the OTP.
+
+html
+
+<div class="otp-input-container">
+  <form (ngSubmit)="onValidateOtp()">
+    <div class="otp-input">
+      <input type="text" [(ngModel)]="otp" name="otp" maxlength="4" required />
+    </div>
+    <button type="submit">Submit</button>
+  </form>
+  <button (click)="onGenerateOtp()">Resend OTP</button>
+</div>
+
+Step 4: Add some CSS for styling
+otp.component.css and otp-input.component.css
+
+css
+
+.otp-container, .otp-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.otp-input input {
+  text-align: center;
+  font-size: 24px;
+  width: 100px;
+  margin-bottom: 20px;
+}
+
+Step 5: Define routes in the app routing module
+app-routing.module.ts
+
+typescript
+
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { OtpComponent } from './otp.component';
+import { OtpInputComponent } from './otp-input.component';
+
+const routes: Routes = [
+  { path: '', component: OtpComponent },
+  { path: 'otp-input', component: OtpInputComponent }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+
+Step 6: Register components and service in the module
+app.module.ts
+
+typescript
+
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { OtpComponent } from './otp.component';
+import { OtpInputComponent } from './otp-input.component';
+import { OtpService } from './otp.service';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    OtpComponent,
+    OtpInputComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    FormsModule,
+    HttpClientModule
+  ],
+  providers: [OtpService],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+This completes the implementation. The user will first see the screen with the "Generate OTP" button. On clicking this button, the app will call the API to generate the OTP and navigate to the OTP input screen. The user can enter the OTP and submit it for validation.
